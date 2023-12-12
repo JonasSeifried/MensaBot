@@ -16,13 +16,13 @@ def main():
         if TARGET_GROUP_ID:
             print(icon_help())
             print(meal_plan)
-            pywhatkit.sendwhatmsg_to_group_instantly(TARGET_GROUP_ID, meal_plan, 5, True, 2)
+            pywhatkit.sendwhatmsg_to_group_instantly(TARGET_GROUP_ID, meal_plan, 10, True, 2)
 
     except Exception as e:
         traceback_str = traceback.format_exc()
         logging.error(traceback_str)
         if ERROR_PHONE_NUMBER:
-            pywhatkit.sendwhatmsg_instantly(ERROR_PHONE_NUMBER.strip(), traceback_str, 5, True, 2)
+            pywhatkit.sendwhatmsg_instantly(ERROR_PHONE_NUMBER.strip(), traceback_str, 10, True, 2)
 
 if __name__ == '__main__':
     main()
