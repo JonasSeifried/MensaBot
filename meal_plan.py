@@ -32,7 +32,7 @@ class Meal:
     cost: str
     
     def __str__(self) -> str:
-        return f"{self.category_icons} *{self.category}* {self.icons} `{self.cost}`\n* {self.description}"
+        return f"{self.category_icons} *{self.category}* {self.icons} ```{self.cost}```\n- {self.description}"
 
 def __get_raw_website(url: str) -> str:
     '''
@@ -100,6 +100,10 @@ def __parse_meal_plan_div(meal_plan_div: Tag, showAllergies: bool) -> Meal:
     return Meal(category, category_icons, icons, description, cost)
 
 def __parse_cost(costs: str) -> str:
+    big = re.search(r'Groß: \d+,?\d+', costs)
+    small = re.search(r'Klein: \d+,?\d+', costs)
+    if big and small:
+        return "\n" + big.group(0) + "€ | " + small.group(0) + "€"
     return re.search(r'\d+,?\d+', costs).group(0) + "€"
     
 def __parse_category(category: str) -> str:
@@ -132,5 +136,5 @@ def __parse_description(description: str, showAllergies: bool) -> str:
     matches = re.findall(r'\((?:\d+[a-z]*,?)*\)', description)
     for match in matches:
         description = description.replace(match, f'```{match}```' if showAllergies else '')
-    return description.replace(" |", "\n*")
+    return description.replace(" |", "\n-")
 
