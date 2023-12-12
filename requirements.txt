@@ -24,7 +24,7 @@ PyRect==0.2.0
 PyScreeze==0.1.30
 python-dotenv==1.0.0
 pytweening==1.0.7
-pywhatkit @ git+https://github.com/JonasSeifried/PyWhatKit@9d7fe0863ae91d358202ed7872a64813d9f819a1
+pywhatkit @ git+https://github.com/JonasSeifried/PyWhatKit.git
 requests==2.28.2
 soupsieve==2.5
 sqlparse==0.4.4
