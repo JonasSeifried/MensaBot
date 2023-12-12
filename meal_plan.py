@@ -9,14 +9,30 @@ def get_meal_plan_str(url: str, showAllergies: bool) -> str:
     meal_plan = __parse_meal_plan(divs, showAllergies)
     return "\n\n".join(map(str, meal_plan))
 
+def icon_help() -> str:
+    return """
+    Icons:
+        ⭐ = Bessere Tierhaltung
+        🐟 = Fisch/Meeresfrüchte
+        🐔 = Geflügel
+        🐑 = Lamm
+        🐄 = Rind
+        🐖 = Schwein
+        🌿 = Vegan
+        🥕 = Vegetarisch
+        🦌 = Wild
+    """
+
 @dataclass
 class Meal:
     category: str
+    category_icons: str
+    icons: str
     description: str
     cost: str
     
     def __str__(self) -> str:
-        return f"*{self.category}* `{self.cost}`\n* {self.description}"
+        return f"{self.category_icons} *{self.category}* {self.icons} `{self.cost}`\n* {self.description}"
 
 def __get_raw_website(url: str) -> str:
     '''
@@ -73,26 +89,47 @@ def __parse_meal_plan_div(meal_plan_div: Tag, showAllergies: bool) -> Meal:
     category_div = meal_plan_div.find('div', {'class': 'category'})
     title_div = meal_plan_div.find('div', {'class': 'title'})
     costs_div = meal_plan_div.find('div', {'class': 'preise'})
-
-    category = __parse_category(category_div.text)
+    title2_div = meal_plan_div.find('div', {'class': 'title_preise_2'})
+    icon_divs = title2_div.find_all('div', {'class': 'speiseplanTagKatIcon'})
+    category =  category_div.text
+    category_icons = __parse_category(category_div.text)
+    icons = __parse_icons(icon_divs)
     description = __parse_description(title_div.text, showAllergies)
     cost = __parse_cost(costs_div.text)
 
-    return Meal(category, description, cost)
+    return Meal(category, category_icons, icons, description, cost)
 
 def __parse_cost(costs: str) -> str:
     return re.search(r'\d+,?\d+', costs).group(0) + "€"
     
 def __parse_category(category: str) -> str:
     match category:
-        case "Seezeit-Teller": return category + " 🌊🕚"
-        case "hin&weg": return category + " 💨"
-        case "KombinierBar": return category + " 🖇️"
-        case "Beilagen": return category + " 🥗"
-        case _: return category
+        case "Seezeit-Teller": return "🌊🕚"
+        case "hin&weg": return "💨"
+        case "KombinierBar": return "🖇️"
+        case "Beilagen": return "🥗"
+        case "Pasta": return "🍝"
+        case "Pasta vegetarisch": return "🍝"
+        case _: return ""
+
+def __parse_icons(icon_divs: list[Tag]) -> str:
+    icons = []
+    classes = list(map(lambda icon_div: icon_div.attrs['class'].pop(), icon_divs))
+    for _class in classes: 
+        match _class:
+            case "B": icons.append("⭐")
+            case "F": icons.append("🐟")
+            case "G": icons.append("🐔")
+            case "L": icons.append("🐑")
+            case "R": icons.append("🐄")
+            case "Sch": icons.append("🐖")
+            case "Vegan": icons.append("🌿")
+            case "Veg": icons.append("🥕")
+            case "W": icons.append("🦌")
+    return " ".join(icons)
 
 def __parse_description(description: str, showAllergies: bool) -> str:
-    matches = re.findall(r'\(\d+(?:,\d+)*\)', description)
+    matches = re.findall(r'\((?:\d+[a-z]*,?)*\)', description)
     for match in matches:
         description = description.replace(match, f'```{match}```' if showAllergies else '')
     return description.replace(" |", "\n*")
